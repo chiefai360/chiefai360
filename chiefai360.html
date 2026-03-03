@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Chief AI 360 — Executive AI Readiness Platform</title>
+<meta name="description" content="Discover your AI Archetype. Get a personalised AI Readiness Report, 90-Day Strategy Plan, and upskilling recommendations."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"/>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#07030F;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh}
+  #root{min-height:100vh}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes popIn{0%{opacity:0;transform:scale(0.76)}65%{transform:scale(1.05)}100%{opacity:1;transform:scale(1)}}
+  @keyframes floatBig{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+  @keyframes floatOrb{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.18}}
+  @keyframes glow{0%,100%{box-shadow:0 0 28px #FF6B0030}50%{box-shadow:0 0 56px #FF6B0058}}
+  .fu{animation:fadeUp 0.42s ease forwards}
+  ::-webkit-scrollbar{width:4px}
+  ::-webkit-scrollbar-thumb{background:#2D1555;border-radius:3px}
+  input::placeholder,textarea::placeholder{color:#402870}
+  textarea{font-family:'Plus Jakarta Sans',sans-serif;resize:vertical}
+  a{text-decoration:none}
+  button{cursor:pointer}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+const B = {
+  o1:"#FF6B00",o2:"#FF8C35",o3:"#FFAA60",
+  p1:"#9320F0",p2:"#B050FF",p3:"#CC88FF",
+  bg:"#07030F",card:"#0F0820",cardHi:"#160B2C",deep:"#050208",
+  b1:"#1E0D38",b2:"#2D1555",
+  t1:"#FFFFFF",t2:"#E4D8FF",t3:"#9478C0",t4:"#402870",
+  ok:"#2EE5A0",warn:"#FFD060",
+};
+const G  = "linear-gradient(135deg,#FF6B00,#9320F0)";
+const GH = "linear-gradient(90deg,#FF6B00,#9320F0)";
+const FS = "'Sora',sans-serif";
+const FB = "'Plus Jakarta Sans',sans-serif";
+const CS = {background:"#0F0820",border:"1px solid #1E0D38",borderRadius:18,padding:"28px 32px"};
+const WP = {maxWidth:900,margin:"0 auto",padding:"0 20px"};
+
+const ARCHETYPES = {
+  pioneer:    {id:"pioneer",    emoji:"🚀",name:"The AI Pioneer",    color:"#FF6B00",bg:"#2A0E00",tagline:"You're not waiting for permission.",        desc:"Bold, fast, and AI-native. Your organisation treats AI as a core competitive weapon. The challenge now is turning momentum into durable, scalable advantage.",                                 traits:["Bold experimenter","Speed over perfection","AI-native mindset","Market leader"],              skillGap:"AI Governance & Responsible Scaling"},
+  strategist: {id:"strategist", emoji:"🎯",name:"The AI Strategist", color:"#B050FF",bg:"#180028",tagline:"Vision is clear. Execution is next.",         desc:"Your strategy is strong and leadership is aligned. The plan is solid — now it's about closing the gap between vision and consistent execution.",                                           traits:["Crystal-clear vision","Strong alignment","Methodical planner","Measured risk"],               skillGap:"AI Execution & Change Management"},
+  builder:    {id:"builder",    emoji:"🏗️",name:"The AI Builder",    color:"#FF8C35",bg:"#1C0800",tagline:"Steady. Structured. Scaling.",                desc:"Beyond buzzwords and into real implementation. Teams are building, data improving, infrastructure coming together. You're in the most valuable phase — proving the model.",              traits:["Implementation-focused","Growing data maturity","Cross-functional momentum","Results-oriented"],skillGap:"AI Infrastructure & DataOps"},
+  experimenter:{id:"experimenter",emoji:"🧪",name:"The AI Experimenter",color:"#CC88FF",bg:"#150025",tagline:"Lots of pilots. Scale-up is next.",        desc:"Genuinely curious and not afraid to try. A growing collection of experiments — some working, some not. The next chapter is creating conditions to scale what works.",                  traits:["High curiosity culture","Multiple active pilots","Learning by doing","Cross-team enthusiasm"],  skillGap:"AI Scaling & Portfolio Management"},
+  guardian:   {id:"guardian",   emoji:"🛡️",name:"The AI Guardian",   color:"#2EE5A0",bg:"#00180E",tagline:"You get it right before going fast.",        desc:"Governance, ethics, and responsible AI are front and centre. A genuine competitive advantage in regulated markets — the opportunity is letting rigour enable speed, not slow it.",    traits:["Governance-first","Strong risk management","Ethics embedded","Trusted by stakeholders"],       skillGap:"AI Strategy & Innovation Activation"},
+  explorer:   {id:"explorer",   emoji:"🌱",name:"The AI Explorer",   color:"#FFAA60",bg:"#1E0900",tagline:"The journey just got interesting.",           desc:"At the beginning of a significant AI journey — and that's an exciting place to be. Many transformations start with honest self-assessment. You now have a clear map forward.",       traits:["Genuine curiosity","Open to change","Leadership willing to invest","Clean-slate advantage"],   skillGap:"AI Foundations & Strategy"},
+};
+
+const DIMS = [
+  {id:"leadership",short:"Leadership", label:"Leadership & Strategy",        icon:"◈",color:"#FF6B00"},
+  {id:"data",      short:"Data",       label:"Data & Information",            icon:"◉",color:"#FF8C35"},
+  {id:"technology",short:"Technology", label:"Technology & Infrastructure",   icon:"◆",color:"#B050FF"},
+  {id:"people",    short:"People",     label:"People & Culture",              icon:"◎",color:"#9320F0"},
+  {id:"governance",short:"Governance", label:"AI Governance & Responsibility",icon:"◇",color:"#CC88FF"},
+  {id:"value",     short:"Value",      label:"Value Realisation",             icon:"◐",color:"#FFAA60"},
+];
+
+const QS = [
+  {id:1, dim:"leadership",text:"Our senior leadership has articulated a clear AI direction linked to our business strategy."},
+  {id:2, dim:"leadership",text:"We have approved budget specifically for AI initiatives and capability building."},
+  {id:3, dim:"leadership",text:"AI investment decisions are evaluated against clear business value and feasibility criteria."},
+  {id:4, dim:"leadership",text:"Our executives visibly sponsor and champion AI adoption — not just in words, but in actions."},
+  {id:5, dim:"data",      text:"We have documented data assets that are clean, labelled, and accessible for AI development."},
+  {id:6, dim:"data",      text:"Data ownership, quality standards, and governance responsibilities are clearly defined."},
+  {id:7, dim:"data",      text:"We can reliably combine data from multiple internal and external sources for analysis."},
+  {id:8, dim:"data",      text:"We treat data as a core strategic asset with formal management processes."},
+  {id:9, dim:"technology",text:"Our cloud and compute infrastructure is capable of supporting AI deployment at scale."},
+  {id:10,dim:"technology",text:"We have — or are actively building — processes to move AI models from experiment into production."},
+  {id:11,dim:"technology",text:"AI or automation tools are actively used in our day-to-day operations today."},
+  {id:12,dim:"technology",text:"Our technology stack has integration points that could readily accommodate new AI capabilities."},
+  {id:13,dim:"people",    text:"Employees across business functions are encouraged and equipped to try AI tools."},
+  {id:14,dim:"people",    text:"We invest in ongoing AI literacy and skills development across our workforce."},
+  {id:15,dim:"people",    text:"Our culture allows people to experiment and fail, without blame or penalty."},
+  {id:16,dim:"people",    text:"Business, technology, and data teams collaborate effectively on AI projects."},
+  {id:17,dim:"governance",text:"We have a formal policy for responsible and ethical AI use within our organisation."},
+  {id:18,dim:"governance",text:"AI systems are assessed for potential risks — bias, privacy, security — before deployment."},
+  {id:19,dim:"governance",text:"There is a named person or team accountable for AI governance in our organisation."},
+  {id:20,dim:"governance",text:"We have a process to monitor, audit, and improve AI systems after they go live."},
+  {id:21,dim:"value",     text:"We track measurable business outcomes — revenue, cost savings, time — from AI investments."},
+  {id:22,dim:"value",     text:"At least one AI initiative has delivered tangible, documented value in the past 12 months."},
+  {id:23,dim:"value",     text:"We have a structured way to scale successful AI pilots across the organisation."},
+  {id:24,dim:"value",     text:"We regularly review and improve our approach to AI based on results and learnings."},
+];
+
+const COURSES = {
+  foundations:[
+    {id:"c1",title:"AI Foundations for Business Leaders",provider:"Coursera / DeepLearning.AI",duration:"6 weeks",price:"$299",rating:4.8,tag:"Bestseller"},
+    {id:"c2",title:"AI Strategy Masterclass for Executives",provider:"MIT Sloan Executive Education",duration:"8 weeks",price:"$2,800",rating:4.9,tag:"Premium"},
+    {id:"c3",title:"Building Your AI Roadmap",provider:"LinkedIn Learning",duration:"3 weeks",price:"$89",rating:4.6,tag:"Quick Start"},
+  ],
+  strategy:[
+    {id:"c4",title:"Executive AI Leadership Programme",provider:"Harvard Business School Online",duration:"10 weeks",price:"$3,200",rating:4.9,tag:"Premium"},
+    {id:"c5",title:"Implementing AI Strategy",provider:"Coursera / Wharton",duration:"5 weeks",price:"$399",rating:4.7,tag:"Popular"},
+    {id:"c6",title:"AI Change Management",provider:"INSEAD Online",duration:"6 weeks",price:"$1,800",rating:4.8,tag:"Recommended"},
+  ],
+  governance:[
+    {id:"c7",title:"Responsible AI at Scale",provider:"Google / Coursera",duration:"4 weeks",price:"$199",rating:4.7,tag:"Free audit"},
+    {id:"c8",title:"AI Risk Management for Leaders",provider:"MIT Professional Education",duration:"8 weeks",price:"$2,400",rating:4.8,tag:"Premium"},
+    {id:"c9",title:"Unlocking AI in Regulated Industries",provider:"Deloitte Academy",duration:"5 weeks",price:"$599",rating:4.6,tag:"Industry"},
+  ],
+  technical:[
+    {id:"c10",title:"Data Strategy for AI Leaders",provider:"Stanford Online",duration:"6 weeks",price:"$1,200",rating:4.8,tag:"Recommended"},
+    {id:"c11",title:"MLOps Fundamentals for Executives",provider:"Coursera",duration:"4 weeks",price:"$249",rating:4.5,tag:"Technical"},
+    {id:"c12",title:"Building AI Product Teams",provider:"Product School",duration:"5 weeks",price:"$699",rating:4.7,tag:"Popular"},
+  ],
+  scaling:[
+    {id:"c13",title:"AI Portfolio Management",provider:"BCG Academy",duration:"6 weeks",price:"$1,500",rating:4.8,tag:"Advanced"},
+    {id:"c14",title:"From Pilot to Production",provider:"AWS Training",duration:"3 weeks",price:"$199",rating:4.6,tag:"Practical"},
+    {id:"c15",title:"Building an AI Centre of Excellence",provider:"Gartner Learning",duration:"8 weeks",price:"$2,200",rating:4.9,tag:"Enterprise"},
+  ],
+};
+
+function getCoursesForArc(arc){
+  return ({pioneer:COURSES.governance,strategist:COURSES.strategy,builder:COURSES.technical,experimenter:COURSES.scaling,guardian:COURSES.strategy,explorer:COURSES.foundations})[arc.id]||COURSES.foundations;
+}
+
+function calcScores(ans){
+  const ds={};
+  DIMS.forEach(d=>{
+    const qs=QS.filter(q=>q.dim===d.id);
+    ds[d.id]=Math.round(qs.reduce((s,q)=>s+(ans[q.id]||3),0)/(qs.length*5)*100);
+  });
+  return {dim:ds,overall:Math.round(Object.values(ds).reduce((a,b)=>a+b,0)/DIMS.length)};
+}
+
+function getArchetype(s){
+  const {dim:d,overall:o}=s;
+  if(o>=75) return ARCHETYPES.pioneer;
+  if(d.governance>=70) return ARCHETYPES.guardian;
+  if(d.leadership>=70) return ARCHETYPES.strategist;
+  if(d.technology>=65&&d.data>=60) return ARCHETYPES.builder;
+  if(d.people>=65) return ARCHETYPES.experimenter;
+  if(o>=50) return ARCHETYPES.builder;
+  if(o>=35) return ARCHETYPES.experimenter;
+  return ARCHETYPES.explorer;
+}
+
+async function callClaude(system,user,max=900){
+  try{
+    const r=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:max,system,messages:[{role:"user",content:user}]})
+    });
+    return (await r.json()).content?.[0]?.text||"";
+  }catch{return "";}
+}
+
+function Pill({c="#FF6B00",children,size="sm"}){
+  return <span style={{display:"inline-block",fontSize:size==="md"?13:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.1,color:c,background:`${c}1A`,border:`1px solid ${c}35`,padding:size==="md"?"6px 14px":"4px 11px",borderRadius:20,fontFamily:FB}}>{children}</span>;
+}
+
+function Btn({children,onClick,v="primary",disabled,full,size="md",style:sx={}}){
+  const pad=size==="lg"?"16px 42px":size==="sm"?"8px 18px":"12px 26px";
+  const fz=size==="lg"?16:size==="sm"?13:14;
+  const variants={
+    primary:{background:G,color:"#fff",boxShadow:"0 4px 22px #FF6B0038"},
+    ghost:{background:"transparent",color:"#E4D8FF",border:"1px solid #2D1555"},
+    soft:{background:"#FF6B0014",color:"#FF8C35",border:"1px solid #FF6B0028"},
+    green:{background:"linear-gradient(135deg,#1A9A60,#2EE5A0)",color:"#fff"},
+    purple:{background:"linear-gradient(135deg,#9320F0,#B050FF)",color:"#fff"},
+  };
+  return(
+    <button onClick={onClick} disabled={disabled}
+      style={{padding:pad,borderRadius:11,fontSize:fz,fontWeight:700,cursor:disabled?"not-allowed":"pointer",border:"none",fontFamily:FS,opacity:disabled?0.4:1,width:full?"100%":undefined,transition:"all 0.18s",display:"inline-flex",alignItems:"center",justifyContent:"center",gap:7,...variants[v],...sx}}
+      onMouseOver={e=>{if(!disabled)e.currentTarget.style.transform="translateY(-2px)";}}
+      onMouseOut={e=>e.currentTarget.style.transform="translateY(0)"}
+    >{children}</button>
+  );
+}
+
+function Field({label,value,onChange,placeholder,type="text",hint}){
+  const [f,setF]=useState(false);
+  return(
+    <div style={{marginBottom:15}}>
+      {label&&<label style={{display:"block",color:f?"#E4D8FF":"#9478C0",fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.2,marginBottom:hint?3:5,fontFamily:FB,transition:"color 0.2s"}}>{label}</label>}
+      {hint&&<p style={{color:"#402870",fontSize:11,fontFamily:FB,marginBottom:5,lineHeight:1.5}}>{hint}</p>}
+      <input type={type} value={value} onChange={onChange} placeholder={placeholder}
+        onFocus={()=>setF(true)} onBlur={()=>setF(false)}
+        style={{width:"100%",padding:"12px 14px",borderRadius:9,border:`1.5px solid ${f?"#FF6B00":"#1E0D38"}`,background:f?"#FF6B0008":"#050208",color:"#fff",fontSize:15,outline:"none",boxSizing:"border-box",fontFamily:FB,transition:"all 0.2s"}}/>
+    </div>
+  );
+}
+
+function TextArea({label,value,onChange,placeholder,rows=4,hint}){
+  const [f,setF]=useState(false);
+  return(
+    <div style={{marginBottom:15}}>
+      {label&&<label style={{display:"block",color:f?"#E4D8FF":"#9478C0",fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.2,marginBottom:hint?3:5,fontFamily:FB,transition:"color 0.2s"}}>{label}</label>}
+      {hint&&<p style={{color:"#402870",fontSize:11,fontFamily:FB,marginBottom:5,lineHeight:1.5}}>{hint}</p>}
+      <textarea value={value} onChange={onChange} placeholder={placeholder} rows={rows}
+        onFocus={()=>setF(true)} onBlur={()=>setF(false)}
+        style={{width:"100%",padding:"12px 14px",borderRadius:9,border:`1.5px solid ${f?"#FF6B00":"#1E0D38"}`,background:f?"#FF6B0008":"#050208",color:"#fff",fontSize:14,outline:"none",boxSizing:"border-box",fontFamily:FB,transition:"all 0.2s",lineHeight:1.65}}/>
+    </div>
+  );
+}
+
+function LogoMark({size=40}){
+  return(
+    <svg width={size} height={size} viewBox="0 0 56 56" fill="none">
+      <defs>
+        <linearGradient id="lga" x1="0" y1="0" x2="56" y2="56" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#FF6B00"/><stop offset="100%" stopColor="#9320F0"/></linearGradient>
+        <linearGradient id="lgb" x1="56" y1="0" x2="0" y2="56" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#FF8C35" stopOpacity="0.4"/><stop offset="100%" stopColor="#B050FF" stopOpacity="0.4"/></linearGradient>
+      </defs>
+      <circle cx="28" cy="28" r="26" fill="none" stroke="url(#lga)" strokeWidth="1.5"/>
+      <polygon points="28,6 46,17 46,39 28,50 10,39 10,17" fill="none" stroke="url(#lgb)" strokeWidth="1" strokeDasharray="3 2"/>
+      <polygon points="28,14 40,28 28,42 16,28" fill="none" stroke="url(#lga)" strokeWidth="1.5"/>
+      <polygon points="28,21 33,28 28,35 23,28" fill="url(#lga)" opacity="0.35"/>
+      <circle cx="28" cy="28" r="4" fill="url(#lga)"/>
+      <circle cx="28" cy="6" r="2.5" fill="#FF6B00"/><circle cx="46" cy="17" r="1.8" fill="#FF8C35"/>
+      <circle cx="46" cy="39" r="1.8" fill="#B050FF"/><circle cx="28" cy="50" r="2.5" fill="#9320F0"/>
+      <circle cx="10" cy="39" r="1.8" fill="#B050FF"/><circle cx="10" cy="17" r="1.8" fill="#FF8C35"/>
+    </svg>
+  );
+}
+
+function Logo({large}){
+  return(
+    <div style={{display:"flex",alignItems:"center",gap:large?14:10}}>
+      <LogoMark size={large?50:36}/>
+      <div>
+        <div style={{fontFamily:FS,fontWeight:900,fontSize:large?30:20,letterSpacing:"-0.5px",lineHeight:1.05,color:"#fff"}}>
+          Chief<span style={{background:GH,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>AI</span><span style={{color:"#FF8C35"}}> 360</span>
+        </div>
+        {large&&<div style={{fontFamily:FB,color:"#9478C0",fontSize:11,letterSpacing:"0.2em",textTransform:"uppercase",marginTop:3}}>Executive AI Readiness Platform</div>}
+      </div>
+    </div>
+  );
+}
+
+function SkillRadar({scores}){
+  const cx=110,cy=110,r=76,n=DIMS.length;
+  const ang=i=>(i/n)*2*Math.PI-Math.PI/2;
+  const pt=(v,i)=>{const a=ang(i),d=v/100*r;return[cx+d*Math.cos(a),cy+d*Math.sin(a)];};
+  const grid=f=>DIMS.map((_,i)=>{const a=ang(i),d=f*r;return`${cx+d*Math.cos(a)},${cy+d*Math.sin(a)}`;}).join(" ");
+  const pts=DIMS.map((d,i)=>pt(scores.dim[d.id],i));
+  return(
+    <svg width={220} height={220} style={{overflow:"visible"}}>
+      {[0.25,0.5,0.75,1].map(f=><polygon key={f} points={grid(f)} fill="none" stroke="#1E0D38" strokeWidth="1"/>)}
+      {DIMS.map((_,i)=>{const a=ang(i);return<line key={i} x1={cx} y1={cy} x2={cx+r*Math.cos(a)} y2={cy+r*Math.sin(a)} stroke="#1E0D38" strokeWidth="1"/>;})}
+      <polygon points={pts.map(p=>p.join(",")).join(" ")} fill="#FF6B0022" stroke="#FF6B00" strokeWidth="1.5"/>
+      {DIMS.map((d,i)=>{const a=ang(i),lx=cx+(r+26)*Math.cos(a),ly=cy+(r+26)*Math.sin(a);return<text key={i} x={lx} y={ly} fill={d.color} fontSize="10" textAnchor="middle" dominantBaseline="middle" fontFamily={FS} fontWeight="700">{d.short}</text>;})}
+      {pts.map((p,i)=><circle key={i} cx={p[0]} cy={p[1]} r={4} fill={DIMS[i].color}/>)}
+    </svg>
+  );
+}
+
+function ReportBlock({title,content,color,icon}){
+  const [open,setOpen]=useState(true);
+  if(!content) return(
+    <div style={{display:"flex",alignItems:"center",gap:10,padding:"14px 0",color:"#9478C0",fontSize:13,fontFamily:FB}}>
+      <span style={{width:15,height:15,border:"2px solid #1E0D38",borderTop:`2px solid ${color}`,borderRadius:"50%",display:"inline-block",animation:"spin 1s linear infinite",flexShrink:0}}/>
+      Preparing {title.toLowerCase()}…
+    </div>
+  );
+  return(
+    <div>
+      <button onClick={()=>setOpen(o=>!o)} style={{width:"100%",background:"none",border:"none",padding:"13px 0",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <div style={{display:"flex",alignItems:"center",gap:9}}><span style={{color,fontSize:17}}>{icon}</span><span style={{fontSize:15,fontWeight:700,color:"#fff",fontFamily:FS}}>{title}</span></div>
+        <span style={{color:"#9478C0",fontSize:11,fontFamily:FB}}>{open?"▲":"▼"}</span>
+      </button>
+      {open&&(
+        <div style={{paddingLeft:26,paddingBottom:16}}>
+          {content.split("\n").map((l,i)=>{
+            const html=l.replace(/\*\*(.+?)\*\*/g,`<strong style="color:#fff;font-weight:700">$1</strong>`);
+            if(l.startsWith("## ")) return<div key={i} style={{borderLeft:`3px solid ${color}`,paddingLeft:11,margin:"14px 0 7px"}}><h3 style={{fontSize:11,fontWeight:700,color,margin:0,textTransform:"uppercase",letterSpacing:0.9,fontFamily:FS}}>{l.slice(3)}</h3></div>;
+            if(l.startsWith("- ")) return<div key={i} style={{display:"flex",gap:8,marginBottom:6}}><span style={{color,fontSize:7,marginTop:9,flexShrink:0}}>◆</span><span style={{color:"#E4D8FF",fontSize:13,lineHeight:1.75,fontFamily:FB}} dangerouslySetInnerHTML={{__html:html.slice(2)}}/></div>;
+            if(!l.trim()) return<div key={i} style={{height:6}}/>;
+            return<p key={i} style={{color:"#E4D8FF",fontSize:13,lineHeight:1.75,margin:"2px 0",fontFamily:FB}} dangerouslySetInnerHTML={{__html:html}}/>;
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CourseCard({course,highlight}){
+  const tc={Bestseller:"#FF6B00",Premium:"#9320F0",Recommended:"#2EE5A0",Popular:"#FF8C35",Advanced:"#B050FF","Free audit":"#2EE5A0",Practical:"#FFAA60",Enterprise:"#CC88FF","Quick Start":"#2EE5A0",Industry:"#FF8C35",Technical:"#B050FF"}[course.tag]||"#FF6B00";
+  return(
+    <div style={{background:highlight?"#160B2C":"#0F0820",border:`1px solid ${highlight?"#FF6B0050":"#1E0D38"}`,borderRadius:13,padding:"17px 19px",display:"flex",flexDirection:"column",gap:8}}>
+      {course.tag&&<Pill c={tc}>{course.tag}</Pill>}
+      <div style={{fontFamily:FS,fontWeight:700,color:"#fff",fontSize:14,lineHeight:1.4}}>{course.title}</div>
+      <div style={{color:"#9478C0",fontSize:12,fontFamily:FB}}>{course.provider}</div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div style={{display:"flex",gap:10}}><span style={{color:"#9478C0",fontSize:11,fontFamily:FB}}>📅 {course.duration}</span><span style={{color:"#FFD060",fontSize:11,fontFamily:FB}}>★ {course.rating}</span></div>
+        <span style={{fontFamily:FS,fontWeight:800,color:"#fff",fontSize:14}}>{course.price}</span>
+      </div>
+      <button style={{padding:"8px",borderRadius:8,background:"#FF6B0014",border:"1px solid #FF6B0028",color:"#FF8C35",fontWeight:700,fontSize:12,fontFamily:FS}}>Enrol Now →</button>
+    </div>
+  );
+}
+
+function StepDots({current,total}){
+  return(
+    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:22}}>
+      {Array.from({length:total},(_,i)=>(
+        <div key={i} style={{display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:26,height:26,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:FS,fontWeight:700,fontSize:11,background:i<current?G:i===current?"#FF6B0020":"transparent",color:i<current?"#fff":i===current?"#FF6B00":"#402870",border:`1.5px solid ${i<=current?"#FF6B00":"#1E0D38"}`,transition:"all 0.3s"}}>{i<current?"✓":i+1}</div>
+          {i<total-1&&<div style={{width:28,height:2,background:i<current?"#FF6B00":"#1E0D38",borderRadius:2}}/>}
+        </div>
+      ))}
+      <span style={{color:"#9478C0",fontSize:11,fontFamily:FB,marginLeft:4}}>Step {current+1} of {total}</span>
+    </div>
+  );
+}
+
+function CheckoutModal({tier,onClose,onDone}){
+  const [email,setEmail]=useState("");
+  const [card,setCard]=useState("");
+  const [exp,setExp]=useState("");
+  const [cvc,setCvc]=useState("");
+  const [busy,setBusy]=useState(false);
+  const [done,setDone]=useState(false);
+  if(!tier) return null;
+  const features=tier.id==="exec"
+    ?["Executive dashboard with team rollup","Full company AI Archetype","30-page Organisational AI Strategy Document","12-month transformation roadmap","Top 5 use cases with ROI estimates","AI Governance framework","Board-ready executive summary","Unlimited team members (each free)"]
+    :["Team AI Archetype & collective score","Full team assessment dashboard","30-page consolidated report","Per-member upskilling plan","Group course enrolment discounts","90-day team action plan"];
+  const pay=()=>{
+    if(!email||!card||!exp||!cvc||busy) return;
+    setBusy(true);
+    setTimeout(()=>{setBusy(false);setDone(true);setTimeout(onDone,1800);},2400);
+  };
+  return(
+    <div style={{position:"fixed",inset:0,background:"#000000C0",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
+      <div style={{...CS,maxWidth:500,width:"100%",maxHeight:"90vh",overflowY:"auto",position:"relative",borderColor:"#2D1555"}}>
+        <button onClick={onClose} style={{position:"absolute",top:14,right:16,background:"none",border:"none",color:"#9478C0",fontSize:22}}>✕</button>
+        {done?(
+          <div style={{textAlign:"center",padding:"32px 0"}}>
+            <div style={{fontSize:54,marginBottom:14}}>🎉</div>
+            <h2 style={{color:"#2EE5A0",fontSize:21,fontFamily:FS,fontWeight:800,marginBottom:10}}>Payment confirmed!</h2>
+            <p style={{color:"#E4D8FF",fontSize:14,fontFamily:FB,lineHeight:1.7}}>Taking you to your {tier.id==="exec"?"Executive Hub":"Team Dashboard"}…</p>
+          </div>
+        ):(
+          <>
+            <Pill c="#FF6B00">{tier.id==="exec"?"Company":"Team"} Assessment</Pill>
+            <h2 style={{fontFamily:FS,fontSize:20,fontWeight:800,margin:"12px 0 5px",color:"#fff"}}>Unlock {tier.name}</h2>
+            <p style={{color:"#E4D8FF",fontSize:13,fontFamily:FB,marginBottom:16,lineHeight:1.65}}>Everything from your individual assessment, plus:</p>
+            <div style={{background:"#050208",borderRadius:11,padding:"13px 15px",marginBottom:14}}>
+              {features.map((f,i)=><div key={i} style={{display:"flex",gap:8,marginBottom:7,fontSize:13,color:"#E4D8FF",fontFamily:FB}}><span style={{color:"#2EE5A0",flexShrink:0}}>✓</span>{f}</div>)}
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:"#050208",borderRadius:11,padding:"11px 15px",marginBottom:14}}>
+              <div>
+                <div style={{color:"#9478C0",fontSize:11,fontFamily:FB,textDecoration:"line-through"}}>Consulting: ${tier.id==="exec"?"8,000–15,000":"2,000–5,000"}</div>
+                <div style={{color:"#FF8C35",fontSize:12,fontWeight:600,fontFamily:FB,marginTop:2}}>Your price:</div>
+              </div>
+              <div style={{textAlign:"right"}}>
+                <div style={{fontFamily:FS,fontSize:34,fontWeight:900,color:"#fff",lineHeight:1}}>{tier.price}</div>
+                <div style={{color:"#9478C0",fontSize:11,fontFamily:FB}}>one-time</div>
+              </div>
+            </div>
+            <Field label="Email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@company.com" type="email"/>
+            <Field label="Card Number" value={card} onChange={e=>setCard(e.target.value)} placeholder="4242 4242 4242 4242"/>
+            <div style={{display:"flex",gap:10}}>
+              <div style={{flex:1}}><Field label="Expiry" value={exp} onChange={e=>setExp(e.target.value)} placeholder="MM/YY"/></div>
+              <div style={{flex:1}}><Field label="CVC" value={cvc} onChange={e=>setCvc(e.target.value)} placeholder="123"/></div>
+            </div>
+            <Btn onClick={pay} disabled={busy||!email||!card||!exp||!cvc} full size="lg" style={{marginTop:6}}>
+              {busy?"Processing…":`Pay ${tier.price} Securely →`}
+            </Btn>
+            <div style={{textAlign:"center",color:"#9478C0",fontSize:11,marginTop:9,fontFamily:FB}}>🔒 256-bit SSL · Stripe · 30-day money-back guarantee</div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function App(){
+  const [stage,setStage]   = useState("home");
+  const [mode,setMode]     = useState("individual");
+  const [pStep,setPStep]   = useState(0);
+  const [profile,setProfile] = useState({name:"",role:"",company:"",industry:"",email:"",website:"",companyDesc:"",aiThinking:""});
+  const [ans,setAns]         = useState({});
+  const [qIdx,setQIdx]       = useState(0);
+  const [scores,setScores]   = useState(null);
+  const [arc,setArc]         = useState(null);
+  const [rpt,setRpt]         = useState({assessment:"",strategy:"",coaching:""});
+  const [gen,setGen]         = useState({assessment:"idle",strategy:"idle",coaching:"idle"});
+  const [peers,setPeers]     = useState([]);
+  const [teamCode]           = useState("CAI-"+Math.random().toString(36).slice(2,8).toUpperCase());
+  const [teamResps,setTeamResps] = useState([]);
+  const [orgRpt,setOrgRpt]   = useState("");
+  const [orgLoad,setOrgLoad] = useState(false);
+  const [checkout,setCheckout] = useState(null);
+  const [revDisp,setRevDisp] = useState(0);
+  const [refLink]            = useState("https://chiefai360.com?ref="+Math.random().toString(36).slice(2,8));
+
+  useEffect(()=>{
+    if(stage==="reveal"&&arc&&scores){
+      setRevDisp(0); let n=0;
+      const iv=setInterval(()=>{n=Math.min(n+scores.overall/55,scores.overall);setRevDisp(Math.round(n));if(n>=scores.overall)clearInterval(iv);},16);
+      return()=>clearInterval(iv);
+    }
+  },[stage]);
+
+  const step0OK = profile.name&&profile.role&&profile.company&&profile.industry&&(mode==="individual"||profile.email);
+  const step1OK = profile.companyDesc.trim().length>20&&profile.aiThinking.trim().length>20;
+
+  function buildCtx(s,a,modeLabel,peerCount){
+    return [
+      modeLabel+" Assessment",
+      "Company: "+profile.company,
+      profile.website?"Website: "+profile.website:null,
+      "Industry: "+profile.industry,
+      profile.role+": "+profile.name,
+      "Score: "+s.overall+"/100",
+      "Archetype: "+a.name,
+      DIMS.map(d=>d.label+": "+s.dim[d.id]+"/100").join(" | "),
+      peerCount?"Peer responses: "+peerCount:null,
+      profile.companyDesc?'Company description: "'+profile.companyDesc+'"':null,
+      profile.aiThinking?'AI thinking: "'+profile.aiThinking+'"':null,
+    ].filter(Boolean).join(" | ");
+  }
+
+  function mergeScore(a,pArr){
+    const m={...a};
+    if(pArr.length) QS.forEach(q=>{const vs=[a[q.id]||3,...pArr.map(p=>p[q.id]||3)];m[q.id]=Math.round(vs.reduce((x,y)=>x+y)/vs.length);});
+    return calcScores(m);
+  }
+
+  async function runAgents(selfAns,peerArr,ml){
+    const s=mergeScore(selfAns,peerArr); setScores(s);
+    const a=getArchetype(s); setArc(a);
+    const ctx=buildCtx(s,a,ml,peerArr.length);
+    setGen({assessment:"running",strategy:"idle",coaching:"idle"});
+    const assessment=await callClaude(
+      "You are a senior AI readiness advisor. Write a concise personalised assessment in markdown (## sections, bullet points). Name the company and industry. Reference their stated AI thinking explicitly. Be direct, specific, no filler. Do not use the phrase 'AI-generated'.",
+      ctx+"\n\nWrite a personalised AI Readiness Assessment (~280 words). Reference their AI intentions and how scores validate or challenge those plans."
+    );
+    setRpt(r=>({...r,assessment})); setGen({assessment:"done",strategy:"running",coaching:"idle"});
+    const strategy=await callClaude(
+      "You are a Chief AI Strategy Officer. Write a focused 90-Day Plan in markdown: ## Phase 1 Quick Wins (weeks 1-4), ## Phase 2 Foundation (weeks 5-8), ## Phase 3 Scale (weeks 9-12), ## Success Metrics. Name specific tools. Ground quick wins in their stated AI use cases. Do not use the phrase 'AI-generated'.",
+      ctx+"\n\nWrite a 90-Day AI Strategy Plan (~280 words) that directly builds on their stated AI thinking. Be industry-specific."
+    );
+    setRpt(r=>({...r,strategy})); setGen({assessment:"done",strategy:"done",coaching:"running"});
+    const coaching=await callClaude(
+      "You are an executive AI upskilling advisor. Write in markdown: ## Your Priority Skill Gap, ## Actions This Week, ## 90-Day Learning Path, ## Success Milestones. Name specific courses and platforms. Connect learning to their AI goals. Do not use the phrase 'AI-generated'.",
+      ctx+"\n\nWrite a personalised AI Upskilling Plan (~280 words). Skill gap: "+a.skillGap+". Connect recommendations to their stated AI goals."
+    );
+    setRpt(r=>({...r,coaching})); setGen({assessment:"done",strategy:"done",coaching:"done"});
+  }
+
+  async function genOrgReport(){
+    setOrgLoad(true);
+    const ctx=buildCtx(scores,arc,"Executive",teamResps.length);
+    const doc=await callClaude(
+      "You are a board-level AI strategy advisor. Write a comprehensive Organisational AI Strategy Document in markdown. Reference the company's industry, description, and AI thinking throughout. Name real tools. Include realistic ROI estimates. Do not use the phrase 'AI-generated'.",
+      ctx+"\n\nFull Organisational AI Strategy Document:\n## Executive Summary\n## AI Readiness Scorecard\n## Industry Benchmarks & Context\n## Strategic AI Opportunity Map\n## Top 5 AI Use Cases with ROI Estimates\n## 12-Month Transformation Roadmap\n## AI Governance Framework\n## Data & Infrastructure Plan\n## Talent & Culture Plan\n## AI Centre of Excellence Blueprint\n## Board Presentation Points",
+      1000
+    );
+    setOrgRpt(doc); setOrgLoad(false);
+  }
+
+  function answer(val){
+    setAns(p=>({...p,[QS[qIdx].id]:val}));
+    if(qIdx<QS.length-1) setTimeout(()=>setQIdx(i=>i+1),170);
+    else setTimeout(()=>setStage("peers"),200);
+  }
+
+  function simPeer(){const s={};QS.forEach(q=>{s[q.id]=Math.max(1,Math.min(5,(ans[q.id]||3)+Math.floor(Math.random()*3)-1));});setPeers(p=>[...p,s]);}
+  function simTeam(){const s={};QS.forEach(q=>{s[q.id]=Math.max(1,Math.min(5,(ans[q.id]||3)+Math.floor(Math.random()*3)-1));});setTeamResps(p=>[...p,s]);}
+
+  function reset(){
+    setStage("home");setAns({});setQIdx(0);setScores(null);setArc(null);
+    setRpt({assessment:"",strategy:"",coaching:""});setPeers([]);setTeamResps([]);
+    setOrgRpt("");setCheckout(null);setMode("individual");setPStep(0);
+    setProfile({name:"",role:"",company:"",industry:"",email:"",website:"",companyDesc:"",aiThinking:""});
+    setGen({assessment:"idle",strategy:"idle",coaching:"idle"});
+  }
+
+  const checkoutDone=()=>{setCheckout(null);if(mode==="exec")setStage("exec_hub");else setStage("upskill");};
+  const set=k=>e=>setProfile(p=>({...p,[k]:e.target.value}));
+
+  // ── HOME
+  if(stage==="home") return(
+    <div style={{minHeight:"100vh",background:"#07030F"}}>
+      <CheckoutModal tier={checkout} onClose={()=>setCheckout(null)} onDone={checkoutDone}/>
+      <nav style={{borderBottom:"1px solid #1E0D38",padding:"0 20px"}}>
+        <div style={{...WP,display:"flex",justifyContent:"space-between",alignItems:"center",height:62}}>
+          <Logo/>
+          <div style={{display:"flex",gap:20,alignItems:"center"}}>
+            <a href="#how" style={{color:"#9478C0",fontSize:13,fontFamily:FB}}>How it works</a>
+            <a href="#pricing" style={{color:"#9478C0",fontSize:13,fontFamily:FB}}>Pricing</a>
+            <Btn onClick={()=>{setMode("individual");setStage("profile");}} size="sm">Start Free →</Btn>
+          </div>
+        </div>
+      </nav>
+      <section style={{padding:"82px 20px 64px",textAlign:"center",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",top:-90,left:"4%",width:460,height:460,borderRadius:"50%",background:"radial-gradient(circle,#FF6B0010,transparent 65%)",pointerEvents:"none",animation:"floatOrb 9s ease-in-out infinite"}}/>
+        <div style={{position:"absolute",top:-20,right:"2%",width:380,height:380,borderRadius:"50%",background:"radial-gradient(circle,#9320F010,transparent 65%)",pointerEvents:"none",animation:"floatOrb 12s ease-in-out infinite reverse"}}/>
+        <div style={WP}>
+          <div className="fu" style={{display:"inline-flex",alignItems:"center",gap:8,background:"#0F0820",border:"1px solid #2D1555",padding:"6px 16px",borderRadius:24,marginBottom:26}}>
+            <span style={{width:6,height:6,borderRadius:"50%",background:"#2EE5A0",boxShadow:"0 0 7px #2EE5A0",flexShrink:0}}/>
+            <span style={{fontSize:12,color:"#E4D8FF",fontFamily:FB}}>Individual free · Team $297 · Company $997</span>
+          </div>
+          <h1 className="fu" style={{fontSize:"clamp(34px,7vw,62px)",fontWeight:900,lineHeight:1.07,letterSpacing:"-2.5px",marginBottom:14,color:"#fff",fontFamily:FS}}>
+            What's Your<br/><span style={{background:G,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>AI Archetype?</span>
+          </h1>
+          <p className="fu" style={{fontSize:17,color:"#E4D8FF",fontFamily:FS,fontWeight:600,marginBottom:9}}>🚀 Pioneer · 🎯 Strategist · 🏗️ Builder · 🧪 Experimenter · 🛡️ Guardian · 🌱 Explorer</p>
+          <p className="fu" style={{fontSize:15,color:"#9478C0",maxWidth:460,margin:"0 auto 30px",lineHeight:1.72,fontFamily:FB}}>Take the 24-question assessment. Discover your AI Archetype. Get a personalised readiness report, upskilling plan, and course recommendations — free for individuals.</p>
+          <div className="fu" style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",marginBottom:12}}>
+            <Btn onClick={()=>{setMode("individual");setStage("profile");}} size="lg" style={{animation:"glow 3s ease-in-out infinite"}}>Take Free Assessment →</Btn>
+            <Btn onClick={()=>{setMode("exec");setStage("profile");}} v="ghost" size="lg">I'm an Executive →</Btn>
+          </div>
+          <p className="fu" style={{color:"#402870",fontSize:12,fontFamily:FB}}>chiefai360.com · No account required</p>
+        </div>
+      </section>
+
+      <section id="how" style={{padding:"0 20px 64px"}}>
+        <div style={WP}>
+          {[
+            {pill:"Individual Journey · Free",pillC:"#2EE5A0",heading:"From Assessment to Action",dark:false,steps:[{n:"01",icon:"📋",t:"24 Questions",d:"~6 min across 6 dimensions.",c:"#FF6B00"},{n:"02",icon:"🎭",t:"AI Archetype",d:"One of 6 archetypes revealed.",c:"#FF8C35"},{n:"03",icon:"📊",t:"Skills Gap",d:"Radar chart + breakdown.",c:"#B050FF"},{n:"04",icon:"📚",t:"Courses",d:"Curated to your skill gap.",c:"#9320F0"},{n:"05",icon:"💰",t:"Referral Income",d:"Earn on every enrolment.",c:"#2EE5A0"}]},
+            {pill:"Executive & Company · Paid",pillC:"#9320F0",heading:"Lead Your Organisation's AI Transformation",dark:true,steps:[{n:"01",icon:"🙋",t:"You Go First",d:"Take the free assessment.",c:"#FF6B00"},{n:"02",icon:"📨",t:"Invite Team",d:"Each member takes it free.",c:"#FF8C35"},{n:"03",icon:"📡",t:"Data Aggregates",d:"Results feed into org profile.",c:"#B050FF"},{n:"04",icon:"📋",t:"Org Report",d:"30-page strategy document.",c:"#9320F0"},{n:"05",icon:"🎓",t:"Upskilling",d:"Per-role course bundles.",c:"#2EE5A0"}]},
+          ].map(sec=>(
+            <div key={sec.pill} style={{marginBottom:48}}>
+              <div style={{textAlign:"center",marginBottom:28}}><Pill c={sec.pillC} size="md">{sec.pill}</Pill><h2 style={{fontSize:"clamp(20px,3.5vw,30px)",fontWeight:900,marginTop:11,letterSpacing:"-0.8px",fontFamily:FS}}>{sec.heading}</h2></div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(155px,1fr))",gap:3}}>
+                {sec.steps.map((s,i)=>(
+                  <div key={i} style={{display:"flex",alignItems:"stretch"}}>
+                    <div style={{...CS,flex:1,padding:"17px",borderLeft:`3px solid ${s.c}`,background:sec.dark?"#160B2C":"#0F0820"}}>
+                      <div style={{fontSize:9,color:s.c,fontWeight:700,letterSpacing:2,marginBottom:7,fontFamily:FS}}>{s.n}</div>
+                      <div style={{fontSize:21,marginBottom:7}}>{s.icon}</div>
+                      <div style={{fontWeight:700,color:"#fff",marginBottom:4,fontSize:13,fontFamily:FS}}>{s.t}</div>
+                      <div style={{color:"#E4D8FF",fontSize:11,lineHeight:1.6,fontFamily:FB}}>{s.d}</div>
+                    </div>
+                    {i<4&&<div style={{display:"flex",alignItems:"center",padding:"0 3px",color:"#402870",fontSize:15}}>›</div>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section id="pricing" style={{padding:"0 20px 72px"}}>
+        <div style={WP}>
+          <div style={{textAlign:"center",marginBottom:40}}>
+            <h2 style={{fontSize:"clamp(22px,4vw,34px)",fontWeight:900,letterSpacing:"-1px",fontFamily:FS,marginBottom:9}}>Every journey starts free.<br/>Scale when you're ready.</h2>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(230px,1fr))",gap:16,maxWidth:820,margin:"0 auto"}}>
+            {[
+              {emoji:"🙋",title:"Individual",sub:"Personal AI Archetype",price:"Free",note:"Always free",color:"#2EE5A0",pri:false,badge:null,items:["AI Archetype + score","6-dimension readiness report","Skills gap radar chart","Curated course recommendations","Referral revenue sharing"],cta:"Start Free →",fn:()=>{setMode("individual");setStage("profile");}},
+              {emoji:"👥",title:"Team Pilot",sub:"5–20 people · 1 dept",price:"$297",note:"one-time",color:"#FF6B00",pri:true,badge:"Most Popular",items:["All individual features × every member","Team AI Archetype + collective score","30-page team report","Per-member upskilling plan","90-day action plan"],cta:"Pilot My Team →",fn:()=>setCheckout({id:"team",name:"Team Pilot",price:"$297"})},
+              {emoji:"🏢",title:"Company",sub:"Full org · unlimited teams",price:"$997",note:"one-time",color:"#9320F0",pri:false,badge:"Highest Value",items:["All Team Pilot features","Executive dashboard","30-page Org AI Strategy Doc","12-month transformation roadmap","Board-ready executive summary"],cta:"Transform My Org →",fn:()=>setCheckout({id:"exec",name:"Company",price:"$997"})},
+            ].map((p)=>(
+              <div key={p.title} style={{position:"relative",background:p.pri?"#160B2C":"#0F0820",border:`2px solid ${p.color}${p.pri?"90":"40"}`,borderRadius:18,padding:"24px 20px",display:"flex",flexDirection:"column"}}>
+                {p.badge&&<div style={{position:"absolute",top:-12,left:"50%",transform:"translateX(-50%)",background:p.pri?"linear-gradient(135deg,#FF6B00,#FF8C35)":G,color:"#fff",padding:"4px 15px",borderRadius:20,fontSize:11,fontWeight:700,whiteSpace:"nowrap",fontFamily:FS}}>{p.badge}</div>}
+                <div style={{fontSize:32,marginBottom:8}}>{p.emoji}</div>
+                <div style={{fontFamily:FS,fontWeight:900,fontSize:19,color:"#fff",marginBottom:2}}>{p.title}</div>
+                <div style={{color:p.color,fontSize:12,fontFamily:FB,marginBottom:13}}>{p.sub}</div>
+                <div style={{marginBottom:18}}><span style={{fontFamily:FS,fontWeight:900,fontSize:32,color:p.price==="Free"?"#2EE5A0":"#fff"}}>{p.price}</span> <span style={{color:"#9478C0",fontSize:12,fontFamily:FB}}>{p.note}</span></div>
+                <div style={{flex:1,marginBottom:20}}>{p.items.map((it,j)=><div key={j} style={{display:"flex",gap:7,marginBottom:7,fontSize:12,color:"#E4D8FF",fontFamily:FB}}><span style={{color:p.color,fontSize:8,flexShrink:0,marginTop:4}}>◆</span>{it}</div>)}</div>
+                <button onClick={p.fn} style={{width:"100%",padding:"12px",borderRadius:9,fontWeight:700,fontSize:13,fontFamily:FS,border:"none",background:p.price==="Free"?"linear-gradient(135deg,#2EE5A0,#1A9A60)":`linear-gradient(135deg,${p.color},${p.pri?"#FF8C35":"#B050FF"})`,color:"#fff",transition:"all 0.2s"}} onMouseOver={e=>e.currentTarget.style.transform="translateY(-2px)"} onMouseOut={e=>e.currentTarget.style.transform="translateY(0)"}>{p.cta}</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <footer style={{borderTop:"1px solid #1E0D38",padding:"22px 20px",textAlign:"center"}}>
+        <div style={{marginBottom:9}}><Logo/></div>
+        <div style={{color:"#9478C0",fontSize:11,marginBottom:5,fontFamily:FB}}>© {new Date().getFullYear()} Chief AI 360 · chiefai360.com</div>
+        <div style={{color:"#402870",fontSize:10,maxWidth:560,margin:"0 auto",lineHeight:1.7,fontFamily:FB}}>All archetypes and methodology are original work of Chief AI 360. Results are directional and do not constitute professional advice.</div>
+      </footer>
+    </div>
+  );
+
+  // ── PROFILE
+  if(stage==="profile") return(
+    <div style={{minHeight:"100vh",background:"#07030F",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"28px 20px"}}>
+      <CheckoutModal tier={checkout} onClose={()=>setCheckout(null)} onDone={checkoutDone}/>
+      <div style={{marginBottom:22}}><Logo large/></div>
+      <div style={{maxWidth:510,width:"100%"}}>
+        <StepDots current={pStep} total={2}/>
+        {pStep===0&&(
+          <div style={CS} className="fu">
+            <div style={{display:"flex",gap:7,marginBottom:16,flexWrap:"wrap"}}>
+              <Pill c="#FF6B00">About You</Pill>
+              <Pill c={mode==="individual"?"#2EE5A0":"#9320F0"}>{mode==="individual"?"🙋 Individual · Free":mode==="exec"?"🏢 Executive · Company":"👥 Team Pilot"}</Pill>
+            </div>
+            <h2 style={{fontSize:21,fontWeight:800,marginBottom:6,fontFamily:FS}}>Tell us about yourself</h2>
+            <p style={{color:"#E4D8FF",fontSize:13,marginBottom:20,lineHeight:1.65,fontFamily:FB}}>Used to personalise your archetype and report. Never shared.</p>
+            <Field label="Full Name" value={profile.name} onChange={set("name")} placeholder="Jane Smith"/>
+            <Field label="Your Role" value={profile.role} onChange={set("role")} placeholder="CEO · CTO · Director · Head of Digital"/>
+            <Field label="Organisation" value={profile.company} onChange={set("company")} placeholder="Acme Corp"/>
+            <Field label="Industry" value={profile.industry} onChange={set("industry")} placeholder="FinTech · Healthcare · Retail · Manufacturing…"/>
+            {mode!=="individual"&&<Field label="Work Email" value={profile.email} onChange={set("email")} placeholder="jane@acmecorp.com" type="email"/>}
+            <Btn onClick={()=>{if(step0OK)setPStep(1);}} disabled={!step0OK} full size="lg" style={{marginTop:4}}>Next: About Your Company →</Btn>
+            {mode!=="individual"&&<div style={{textAlign:"center",marginTop:11}}><button onClick={()=>setMode("individual")} style={{background:"none",border:"none",color:"#9478C0",fontSize:11,fontFamily:FB}}>Switch to Individual (free) →</button></div>}
+          </div>
+        )}
+        {pStep===1&&(
+          <div style={CS} className="fu">
+            <div style={{display:"flex",gap:7,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
+              <Pill c="#9320F0">About Your Company</Pill>
+              <span style={{color:"#9478C0",fontSize:12,fontFamily:FB}}>Shapes your entire report</span>
+            </div>
+            <h2 style={{fontSize:21,fontWeight:800,marginBottom:6,fontFamily:FS}}>Help us understand your world</h2>
+            <p style={{color:"#E4D8FF",fontSize:13,marginBottom:20,lineHeight:1.65,fontFamily:FB}}>The more context you share, the more specific and useful your report will be.</p>
+            <Field label="Company Website" value={profile.website} onChange={set("website")} placeholder="https://www.acmecorp.com" hint="Optional — helps contextualise your market position."/>
+            <TextArea label="What does your company do?" value={profile.companyDesc} onChange={set("companyDesc")} placeholder="E.g. We're a mid-sized insurance broker with 400 staff. We process ~50,000 claims per year. Main challenge is manual document handling and slow underwriting." rows={4} hint="2–4 sentences. Include size, what you do, and your key business challenge."/>
+            <TextArea label="How are you currently thinking about using AI?" value={profile.aiThinking} onChange={set("aiThinking")} placeholder="E.g. We're exploring AI to automate claims triage. We did one small chatbot pilot but haven't scaled it. Leadership is interested but cautious about compliance risks." rows={4} hint="Be honest — no wrong answers. Shapes your 90-day strategy plan."/>
+            <div style={{background:"#050208",border:"1px solid #1E0D38",borderRadius:11,padding:"11px 14px",marginBottom:14}}>
+              <div style={{color:"#9478C0",fontSize:9,fontFamily:FB,textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Your Profile</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
+                {[{l:"Company",v:profile.company},{l:"Industry",v:profile.industry},{l:"Role",v:profile.role}].map(({l,v})=>(
+                  <div key={l} style={{background:"#160B2C",borderRadius:7,padding:"5px 11px"}}>
+                    <div style={{color:"#402870",fontSize:9,fontFamily:FB,textTransform:"uppercase"}}>{l}</div>
+                    <div style={{color:"#E4D8FF",fontSize:12,fontFamily:FB,marginTop:1}}>{v}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div style={{display:"flex",gap:9}}>
+              <Btn onClick={()=>setPStep(0)} v="ghost" size="md">← Back</Btn>
+              <Btn onClick={()=>setStage("survey")} disabled={!step1OK} full size="lg">Start Assessment →</Btn>
+            </div>
+            <p style={{color:"#402870",fontSize:10,fontFamily:FB,textAlign:"center",marginTop:10,lineHeight:1.6}}>✦ Never stored or shared. Used only to personalise your report.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  // ── SURVEY
+  if(stage==="survey"){
+    const q=QS[qIdx],dim=DIMS.find(d=>d.id===q.dim),pct=Math.round((qIdx/QS.length)*100);
+    return(
+      <div style={{minHeight:"100vh",background:"#07030F",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"20px"}}>
+        <div style={{maxWidth:630,width:"100%"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:9}}><Logo/><span style={{color:"#9478C0",fontSize:12,fontFamily:FB}}>{qIdx+1} / {QS.length}</span></div>
+          <div style={{height:4,background:"#1E0D38",borderRadius:3,marginBottom:20}}><div style={{height:"100%",width:pct+"%",background:G,borderRadius:3,transition:"width 0.3s ease",boxShadow:"0 0 10px #FF6B0040"}}/></div>
+          <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:13}}>
+            <span style={{color:dim.color,fontSize:16}}>{dim.icon}</span>
+            <span style={{color:dim.color,fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:1.4,fontFamily:FS}}>{dim.label}</span>
+          </div>
+          <div style={{...CS,marginBottom:11}} className="fu">
+            <p style={{fontSize:"clamp(14px,2.4vw,18px)",lineHeight:1.72,color:"#fff",fontWeight:600,marginBottom:28,fontFamily:FS}}>{q.text}</p>
+            <div style={{display:"flex",gap:7,flexWrap:"wrap",justifyContent:"center"}}>
+              {[{v:1,e:"😟",l:"Strongly\nDisagree"},{v:2,e:"🙁",l:"Disagree"},{v:3,e:"😐",l:"Neutral"},{v:4,e:"🙂",l:"Agree"},{v:5,e:"🤩",l:"Strongly\nAgree"}].map(o=>{
+                const sel=ans[q.id]===o.v;
+                return<button key={o.v} onClick={()=>answer(o.v)} style={{padding:"10px 11px",minWidth:78,borderRadius:9,border:`2px solid ${sel?dim.color:"#1E0D38"}`,background:sel?dim.color+"20":"#050208",color:sel?dim.color:"#9478C0",transition:"all 0.12s",display:"flex",flexDirection:"column",alignItems:"center",gap:3,fontSize:10,fontWeight:600,lineHeight:1.3,fontFamily:FS}}>
+                  <span style={{fontSize:18}}>{o.e}</span>{o.l.split("\n").map((x,i)=><span key={i}>{x}</span>)}
+                </button>;
+              })}
+            </div>
+          </div>
+          {qIdx>0&&<button onClick={()=>setQIdx(i=>i-1)} style={{background:"none",border:"none",color:"#9478C0",fontSize:12,fontFamily:FB}}>← Previous</button>}
+        </div>
+      </div>
+    );
+  }
+
+  // ── PEERS
+  if(stage==="peers") return(
+    <div style={{minHeight:"100vh",background:"#07030F",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"28px 20px"}}>
+      <div style={{...CS,maxWidth:480,width:"100%"}} className="fu">
+        <Pill c="#B050FF">Step 3 of 3</Pill>
+        <h2 style={{fontSize:21,fontWeight:800,margin:"11px 0 7px",fontFamily:FS}}>360° Input</h2>
+        <p style={{color:"#E4D8FF",fontSize:13,lineHeight:1.7,marginBottom:16,fontFamily:FB}}>Optionally add peer responses to see how team input shifts your archetype.</p>
+        <div style={{background:"#050208",border:"1px solid #1E0D38",borderRadius:11,padding:"14px",marginBottom:13,textAlign:"center"}}>
+          <div style={{fontFamily:FS,fontSize:40,fontWeight:900,background:G,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",lineHeight:1}}>{peers.length}</div>
+          <div style={{color:"#E4D8FF",fontSize:12,marginTop:3,fontFamily:FB}}>additional response{peers.length!==1?"s":""}</div>
+        </div>
+        <button onClick={simPeer} style={{width:"100%",padding:"11px",borderRadius:9,border:"1.5px dashed #1E0D38",background:"transparent",color:"#E4D8FF",fontFamily:FB,fontSize:13,marginBottom:10}} onMouseOver={e=>e.currentTarget.style.borderColor="#FF6B00"} onMouseOut={e=>e.currentTarget.style.borderColor="#1E0D38"}>+ Simulate Peer Response</button>
+        <Btn onClick={async()=>{setStage("generating");await runAgents(ans,peers,mode==="individual"?"Individual":mode==="exec"?"Executive":"Team");setStage("reveal");}} full size="lg">Reveal My Archetype →</Btn>
+      </div>
+    </div>
+  );
+
+  // ── GENERATING
+  if(stage==="generating") return(
+    <div style={{minHeight:"100vh",background:"#07030F",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:24,padding:28}}>
+      <Logo large/>
+      <div style={{position:"relative",width:60,height:60}}>
+        <div style={{position:"absolute",inset:0,border:"3px solid #1E0D38",borderTop:"3px solid #FF6B00",borderRadius:"50%",animation:"spin 1s linear infinite"}}/>
+        <div style={{position:"absolute",inset:9,border:"2px solid #1E0D38",borderBottom:"2px solid #9320F0",borderRadius:"50%",animation:"spin 1.8s linear infinite reverse"}}/>
+        <div style={{position:"absolute",inset:20,background:G,borderRadius:"50%",opacity:0.4}}/>
+      </div>
+      <div style={{textAlign:"center"}}>
+        <h2 style={{fontSize:17,fontWeight:700,color:"#fff",fontFamily:FS,marginBottom:6}}>{gen.assessment==="running"?"Analysing your responses…":gen.strategy==="running"?"Building your strategy plan…":gen.coaching==="running"?"Preparing your upskilling plan…":"Almost ready…"}</h2>
+        <p style={{color:"#E4D8FF",fontSize:13,fontFamily:FB}}>Personalising for {profile.company} · {profile.industry}</p>
+      </div>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center"}}>
+        {[["assessment","◈ Assessment"],["strategy","◆ Strategy"],["coaching","◎ Upskilling"]].map(([k,label])=>(
+          <div key={k} style={{display:"flex",alignItems:"center",gap:6,padding:"5px 13px",borderRadius:20,fontSize:11,fontFamily:FB,border:`1px solid ${gen[k]==="done"?"#2EE5A0":gen[k]==="running"?"#9320F0":"#1E0D38"}`,color:gen[k]==="done"?"#2EE5A0":gen[k]==="running"?"#B050FF":"#9478C0"}}>
+            <span style={{width:5,height:5,borderRadius:"50%",flexShrink:0,background:gen[k]==="done"?"#2EE5A0":gen[k]==="running"?"#9320F0":"#1E0D38",animation:gen[k]==="running"?"pulse 1s infinite":"none"}}/>
+            {label}{gen[k]==="done"?" ✓":""}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  // ── REVEAL
+  if(stage==="reveal"&&arc&&scores) return(
+    <div style={{minHeight:"100vh",background:"#07030F",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"24px 20px"}}>
+      <CheckoutModal tier={checkout} onClose={()=>setCheckout(null)} onDone={checkoutDone}/>
+      <div style={{maxWidth:540,width:"100%"}}>
+        <div style={{textAlign:"center",marginBottom:16}}><Logo/></div>
+        <div style={{background:`linear-gradient(140deg,${arc.bg},#0F0820)`,border:`2px solid ${arc.color}60`,borderRadius:20,padding:"28px 24px",textAlign:"center",marginBottom:12,position:"relative",overflow:"hidden",animation:"popIn 0.55s cubic-bezier(.34,1.56,.64,1) forwards"}}>
+          <div style={{position:"absolute",top:-40,left:"50%",transform:"translateX(-50%)",width:200,height:200,borderRadius:"50%",background:`radial-gradient(circle,${arc.color}16,transparent 65%)`,pointerEvents:"none"}}/>
+          <div style={{fontSize:58,marginBottom:8,animation:"floatBig 3s ease-in-out infinite"}}>{arc.emoji}</div>
+          <div style={{fontFamily:FS,fontSize:"clamp(20px,4.5vw,29px)",fontWeight:900,color:arc.color,marginBottom:4}}>{arc.name}</div>
+          <div style={{fontSize:14,color:"#E4D8FF",fontStyle:"italic",marginBottom:13,fontFamily:FB}}>"{arc.tagline}"</div>
+          <div style={{display:"inline-flex",alignItems:"center",gap:12,background:arc.color+"14",border:`1px solid ${arc.color}38`,borderRadius:50,padding:"10px 20px",marginBottom:14}}>
+            <div><div style={{fontFamily:FS,fontSize:30,fontWeight:900,color:arc.color,lineHeight:1}}>{revDisp}</div><div style={{color:"#9478C0",fontSize:10,fontFamily:FB}}>/ 100</div></div>
+            <div style={{textAlign:"left"}}><div style={{color:"#E4D8FF",fontSize:12,fontWeight:600,fontFamily:FS}}>AI Readiness</div><div style={{color:"#9478C0",fontSize:10,fontFamily:FB}}>6 dimensions · {profile.company}</div></div>
+          </div>
+          <p style={{color:"#E4D8FF",fontSize:14,lineHeight:1.72,maxWidth:400,margin:"0 auto 14px",fontFamily:FB}}>{arc.desc}</p>
+          <div style={{display:"flex",flexWrap:"wrap",gap:5,justifyContent:"center",marginBottom:12}}>
+            {arc.traits.map((t,i)=><div key={i} style={{background:arc.color+"12",border:`1px solid ${arc.color}28`,borderRadius:20,padding:"4px 11px",fontSize:11,color:arc.color,fontFamily:FB,fontWeight:600}}>{t}</div>)}
+          </div>
+          <div style={{background:arc.color+"0E",border:`1px solid ${arc.color}25`,borderRadius:9,padding:"10px 13px",fontSize:12,color:"#E4D8FF",fontFamily:FB}}>
+            <strong style={{color:arc.color,fontFamily:FS}}>Key skill gap: </strong>{arc.skillGap}
+          </div>
+        </div>
+        <div style={{...CS,marginBottom:10,padding:"13px 17px"}}>
+          <div style={{color:"#9478C0",fontSize:9,fontFamily:FB,marginBottom:9,textAlign:"center",textTransform:"uppercase",letterSpacing:1}}>The 6 Chief AI 360 Archetypes</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:5,justifyContent:"center"}}>
+            {Object.values(ARCHETYPES).map(a=>(
+              <div key={a.id} style={{display:"flex",alignItems:"center",gap:4,padding:"4px 10px",borderRadius:16,fontSize:11,fontFamily:FB,background:a.id===arc.id?a.color+"20":"transparent",border:`1px solid ${a.id===arc.id?a.color:"#1E0D38"}`,color:a.id===arc.id?a.color:"#9478C0",fontWeight:a.id===arc.id?700:400}}>
+                {a.emoji} {a.name.replace("The ","")} {a.id===arc.id&&<span style={{fontSize:8,fontWeight:800}}>YOU</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          <button onClick={()=>{navigator.clipboard&&navigator.clipboard.writeText('I just discovered I\'m "'+arc.name+'" on Chief AI 360 — scored '+scores.overall+'/100 on AI Readiness. Find your archetype at chiefai360.com #ChiefAI360').catch(()=>{});alert("Copied! Paste into LinkedIn 🚀");}} style={{width:"100%",padding:"12px",background:`linear-gradient(135deg,${arc.color}16,#9320F016)`,border:`1.5px solid ${arc.color}50`,borderRadius:10,color:arc.color,fontWeight:700,fontSize:13,fontFamily:FS}}>Share on LinkedIn 📢</button>
+          <Btn onClick={()=>setStage("upskill")} full size="lg">See My Skills Gap & Courses →</Btn>
+          {(mode==="exec"||mode==="company")&&<Btn onClick={()=>setCheckout({id:"exec",name:"Company",price:"$997"})} v="purple" full>Unlock Company Strategy Report →</Btn>}
+          {mode==="team"&&<Btn onClick={()=>setCheckout({id:"team",name:"Team Pilot",price:"$297"})} v="purple" full>Unlock Team Dashboard →</Btn>}
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── UPSKILL
+  if(stage==="upskill"&&arc&&scores){
+    const courses=getCoursesForArc(arc);
+    const weak=DIMS.slice().sort((a,b)=>scores.dim[a.id]-scores.dim[b.id]).slice(0,2);
+    return(
+      <div style={{minHeight:"100vh",background:"#07030F",paddingTop:26,paddingBottom:72}}>
+        <CheckoutModal tier={checkout} onClose={()=>setCheckout(null)} onDone={checkoutDone}/>
+        <div style={WP}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:22,flexWrap:"wrap",gap:9}}>
+            <Logo/>
+            <div style={{display:"flex",gap:8,alignItems:"center"}}>
+              <div style={{display:"flex",alignItems:"center",gap:6,padding:"5px 11px",background:arc.color+"16",border:`1px solid ${arc.color}38`,borderRadius:18}}>
+                <span style={{fontSize:14}}>{arc.emoji}</span>
+                <span style={{fontFamily:FS,fontWeight:700,color:arc.color,fontSize:12}}>{arc.name}</span>
+                <span style={{fontFamily:FS,fontWeight:900,color:arc.color,fontSize:14,marginLeft:3}}>{scores.overall}</span>
+              </div>
+              <button onClick={reset} style={{background:"none",border:"1px solid #1E0D38",borderRadius:7,color:"#E4D8FF",padding:"5px 12px",fontSize:11,fontFamily:FB}}>↩ Restart</button>
+            </div>
+          </div>
+
+          <div style={{background:"#050208",border:"1px solid #1E0D38",borderRadius:11,padding:"11px 16px",marginBottom:13,display:"flex",gap:14,flexWrap:"wrap"}} className="fu">
+            <div style={{flex:1,minWidth:180}}>
+              <div style={{color:"#9478C0",fontSize:9,fontFamily:FB,textTransform:"uppercase",letterSpacing:1,marginBottom:4}}>Personalised for</div>
+              <div style={{color:"#fff",fontSize:13,fontFamily:FB,fontWeight:600}}>{profile.company} · {profile.industry}</div>
+              {profile.website&&<a href={profile.website} target="_blank" rel="noopener noreferrer" style={{color:"#FF8C35",fontSize:11,fontFamily:FB,display:"block",marginTop:2}}>🔗 {profile.website.replace(/https?:\/\//,"").slice(0,40)}</a>}
+            </div>
+            {profile.aiThinking&&<div style={{flex:2,minWidth:180,borderLeft:"1px solid #1E0D38",paddingLeft:14}}>
+              <div style={{color:"#9478C0",fontSize:9,fontFamily:FB,textTransform:"uppercase",letterSpacing:1,marginBottom:4}}>Your stated AI thinking</div>
+              <p style={{color:"#9478C0",fontSize:11,fontFamily:FB,fontStyle:"italic",lineHeight:1.6,margin:0}}>"{profile.aiThinking.slice(0,150)}{profile.aiThinking.length>150?"…":""}"</p>
+            </div>}
+          </div>
+
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:13,marginBottom:13}}>
+            <div style={{...CS,display:"flex",flexDirection:"column",alignItems:"center",gap:16}} className="fu">
+              <div style={{fontWeight:700,color:"#fff",fontSize:15,fontFamily:FS,alignSelf:"flex-start"}}>Your Readiness Radar</div>
+              <SkillRadar scores={scores}/>
+              <div style={{width:"100%"}}>
+                {DIMS.map(d=>(
+                  <div key={d.id} style={{marginBottom:8}}>
+                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}><span style={{color:"#E4D8FF",fontSize:11,fontFamily:FB}}>{d.icon} {d.short}</span><span style={{color:d.color,fontWeight:700,fontSize:11,fontFamily:FS}}>{scores.dim[d.id]}</span></div>
+                    <div style={{height:3,background:"#1E0D38",borderRadius:2}}><div style={{height:"100%",width:scores.dim[d.id]+"%",background:`linear-gradient(90deg,${d.color},#B050FF)`,borderRadius:2,transition:"width 1.1s ease"}}/></div>
+                  </div>
+                ))}
+              </div>
+              {weak.length>0&&<div style={{width:"100%",background:"#FF6B000E",border:"1px solid #FF6B0025",borderRadius:9,padding:"9px 12px",fontSize:11,color:"#E4D8FF",fontFamily:FB}}><strong style={{color:"#FF6B00",fontFamily:FS}}>Priority focus: </strong>{weak.map(d=>d.label).join(" and ")}</div>}
+            </div>
+            <div style={CS} className="fu">
+              <ReportBlock title="Readiness Assessment" content={rpt.assessment} color="#FF6B00" icon="◈"/>
+              <div style={{height:1,background:"#1E0D38",margin:"3px 0"}}/>
+              <ReportBlock title="90-Day Strategy Plan" content={rpt.strategy} color="#B050FF" icon="◆"/>
+              <div style={{height:1,background:"#1E0D38",margin:"3px 0"}}/>
+              <ReportBlock title="Upskilling Plan" content={rpt.coaching} color="#FFAA60" icon="◎"/>
+            </div>
+          </div>
+
+          <div style={{...CS,marginBottom:12}} className="fu">
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18,flexWrap:"wrap",gap:9}}>
+              <div><div style={{fontFamily:FS,fontWeight:800,color:"#fff",fontSize:17,marginBottom:3}}>Recommended Courses</div><div style={{color:"#9478C0",fontSize:12,fontFamily:FB}}>Matched to: <strong style={{color:arc.color}}>{arc.skillGap}</strong></div></div>
+              <Pill c="#2EE5A0" size="md">Referral partnerships</Pill>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(195px,1fr))",gap:11}}>
+              {courses.map((c,i)=><CourseCard key={c.id} course={c} highlight={i===0}/>)}
+            </div>
+          </div>
+
+          <div style={{...CS,border:"1px solid #2EE5A038",background:"linear-gradient(135deg,#2EE5A008,#0F0820)",marginBottom:12}} className="fu">
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:16}}>
+              <div><div style={{fontSize:24,marginBottom:8}}>💰</div><div style={{fontFamily:FS,fontWeight:800,color:"#fff",fontSize:16,marginBottom:6}}>Your Referral Link</div><p style={{color:"#E4D8FF",fontSize:12,lineHeight:1.7,fontFamily:FB,maxWidth:340}}>Share this link. Earn commission when anyone enrols in a recommended course.</p></div>
+              <div style={{flex:1,minWidth:210}}>
+                <div style={{background:"#050208",border:"1px solid #2D1555",borderRadius:9,padding:"10px 12px",fontFamily:"monospace",fontSize:11,color:"#2EE5A0",marginBottom:9,wordBreak:"break-all"}}>{refLink}</div>
+                <Btn onClick={()=>{navigator.clipboard&&navigator.clipboard.writeText(refLink).catch(()=>{});alert("Referral link copied!");}} v="green" full>Copy Referral Link</Btn>
+              </div>
+            </div>
+          </div>
+
+          {mode==="individual"&&(
+            <div style={{...CS,border:"1px solid #9320F038",background:"linear-gradient(135deg,#9320F008,#0F0820)"}} className="fu">
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:20}}>
+                <div style={{flex:2,minWidth:200}}>
+                  <Pill c="#9320F0">Take it company-wide</Pill>
+                  <h3 style={{fontFamily:FS,fontSize:17,fontWeight:800,margin:"10px 0 8px",color:"#fff"}}>Want this for {profile.company||"your whole team"}?</h3>
+                  <p style={{color:"#E4D8FF",fontSize:13,lineHeight:1.7,fontFamily:FB,maxWidth:380}}>Get a consolidated org-level view, a 30-page strategy document, governance framework, and board-ready summary.</p>
+                </div>
+                <div style={{textAlign:"center",flexShrink:0,display:"flex",flexDirection:"column",gap:8}}>
+                  <div><div style={{fontFamily:FS,fontSize:24,fontWeight:900,color:"#fff"}}>$297</div><div style={{color:"#9478C0",fontSize:10,fontFamily:FB,marginBottom:7}}>Team Pilot</div><Btn onClick={()=>setCheckout({id:"team",name:"Team Pilot",price:"$297"})} full size="sm">Pilot My Team →</Btn></div>
+                  <div><div style={{fontFamily:FS,fontSize:24,fontWeight:900,color:"#fff"}}>$997</div><div style={{color:"#9478C0",fontSize:10,fontFamily:FB,marginBottom:7}}>Company</div><Btn onClick={()=>setCheckout({id:"exec",name:"Company",price:"$997"})} v="purple" full size="sm">Transform My Org →</Btn></div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── EXEC HUB
+  if(stage==="exec_hub"&&arc&&scores) return(
+    <div style={{minHeight:"100vh",background:"#07030F",paddingTop:26,paddingBottom:72}}>
+      <CheckoutModal tier={checkout} onClose={()=>setCheckout(null)} onDone={checkoutDone}/>
+      <div style={WP}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:22,flexWrap:"wrap",gap:9}}>
+          <Logo/>
+          <div style={{display:"flex",gap:8,alignItems:"center"}}>
+            <Pill c="#9320F0" size="md">🏢 Executive Hub</Pill>
+            <button onClick={reset} style={{background:"none",border:"1px solid #1E0D38",borderRadius:7,color:"#E4D8FF",padding:"5px 12px",fontSize:11,fontFamily:FB}}>↩ Restart</button>
+          </div>
+        </div>
+        <div style={{background:"#050208",border:"1px solid #1E0D38",borderRadius:11,padding:"13px 18px",marginBottom:13,display:"flex",gap:13,flexWrap:"wrap"}} className="fu">
+          <div style={{flex:1,minWidth:180}}>
+            <div style={{color:"#9478C0",fontSize:9,fontFamily:FB,textTransform:"uppercase",letterSpacing:1,marginBottom:4}}>Assessment context</div>
+            <div style={{color:"#fff",fontSize:13,fontFamily:FB,fontWeight:600,marginBottom:2}}>{profile.company} · {profile.industry}</div>
+            {profile.website&&<a href={profile.website} target="_blank" rel="noopener noreferrer" style={{color:"#FF8C35",fontSize:11,fontFamily:FB,display:"block",marginBottom:3}}>🔗 {profile.website}</a>}
+            {profile.companyDesc&&<p style={{color:"#9478C0",fontSize:11,fontFamily:FB,lineHeight:1.6,margin:0}}>{profile.companyDesc}</p>}
+          </div>
+          {profile.aiThinking&&<div style={{flex:1,minWidth:180,borderLeft:"1px solid #1E0D38",paddingLeft:13}}>
+            <div style={{color:"#9478C0",fontSize:9,fontFamily:FB,textTransform:"uppercase",letterSpacing:1,marginBottom:4}}>Stated AI thinking</div>
+            <p style={{color:"#E4D8FF",fontSize:11,fontFamily:FB,lineHeight:1.65,fontStyle:"italic",margin:0}}>"{profile.aiThinking}"</p>
+          </div>}
+        </div>
+        <div style={{background:`linear-gradient(140deg,${arc.bg},#0F0820)`,border:`1.5px solid ${arc.color}48`,borderRadius:18,padding:"24px 28px",marginBottom:13}} className="fu">
+          <div style={{display:"flex",alignItems:"center",gap:16,flexWrap:"wrap"}}>
+            <div style={{fontSize:44}}>{arc.emoji}</div>
+            <div style={{flex:1}}>
+              <div style={{fontFamily:FS,fontSize:9,fontWeight:700,color:arc.color,textTransform:"uppercase",letterSpacing:1.4,marginBottom:4}}>Your organisation's archetype</div>
+              <div style={{fontFamily:FS,fontSize:22,fontWeight:900,color:arc.color,marginBottom:3}}>{arc.name}</div>
+              <div style={{color:"#E4D8FF",fontSize:13,fontFamily:FB}}>{profile.company} · {profile.industry} · {profile.name}</div>
+            </div>
+            <div style={{textAlign:"right"}}><div style={{fontFamily:FS,fontSize:44,fontWeight:900,color:arc.color,lineHeight:1}}>{scores.overall}</div><div style={{color:"#9478C0",fontSize:11,fontFamily:FB}}>/ 100 org score</div></div>
+          </div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:13,marginBottom:13}}>
+          <div style={CS} className="fu">
+            <div style={{fontFamily:FS,fontWeight:700,color:"#fff",fontSize:15,marginBottom:4}}>📨 Invite Your Team</div>
+            <p style={{color:"#E4D8FF",fontSize:12,fontFamily:FB,lineHeight:1.65,marginBottom:13}}>Each member takes the assessment for <strong style={{color:"#fff"}}>free</strong>.</p>
+            <div style={{background:"#050208",borderRadius:9,padding:"12px",marginBottom:11}}>
+              <div style={{color:"#9478C0",fontSize:9,fontFamily:FB,textTransform:"uppercase",letterSpacing:1,marginBottom:4}}>Team Invite Link</div>
+              <div style={{fontFamily:"monospace",fontSize:11,color:"#2EE5A0",wordBreak:"break-all",marginBottom:8}}>https://chiefai360.com/team/{teamCode}</div>
+              <Btn onClick={()=>{navigator.clipboard&&navigator.clipboard.writeText("https://chiefai360.com/team/"+teamCode).catch(()=>{});alert("Copied!");}} v="green" size="sm" full>Copy Invite Link</Btn>
+            </div>
+            <div style={{background:"#050208",borderRadius:9,padding:"12px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}><div style={{color:"#E4D8FF",fontSize:12,fontFamily:FS,fontWeight:600}}>Team Responses</div><Pill c="#2EE5A0">{teamResps.length} received</Pill></div>
+              <button onClick={simTeam} style={{width:"100%",padding:"8px",borderRadius:7,border:"1.5px dashed #1E0D38",background:"transparent",color:"#E4D8FF",fontFamily:FB,fontSize:11,marginBottom:8}} onMouseOver={e=>e.currentTarget.style.borderColor="#2EE5A0"} onMouseOut={e=>e.currentTarget.style.borderColor="#1E0D38"}>+ Simulate Team Response</button>
+              <Btn onClick={async()=>{if(!orgRpt)await genOrgReport();setStage("org_report");}} v="purple" full disabled={orgLoad}>{orgLoad?"Generating…":"Generate Full Org Report →"}</Btn>
+            </div>
+          </div>
+          <div style={CS} className="fu">
+            <div style={{fontFamily:FS,fontWeight:700,color:"#fff",fontSize:15,marginBottom:13}}>Organisational Readiness</div>
+            {DIMS.map(d=>(
+              <div key={d.id} style={{marginBottom:11}}>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}><span style={{color:"#E4D8FF",fontSize:12,fontFamily:FB}}>{d.icon} {d.label}</span><span style={{color:d.color,fontWeight:700,fontSize:12,fontFamily:FS}}>{scores.dim[d.id]}</span></div>
+                <div style={{height:4,background:"#1E0D38",borderRadius:2}}><div style={{height:"100%",width:scores.dim[d.id]+"%",background:`linear-gradient(90deg,${d.color},#B050FF)`,borderRadius:2,transition:"width 1.3s ease"}}/></div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{...CS,marginBottom:13}} className="fu">
+          <div style={{fontFamily:FS,fontWeight:700,color:"#fff",fontSize:15,marginBottom:16,paddingBottom:13,borderBottom:"1px solid #1E0D38"}}>Strategy Reports</div>
+          <ReportBlock title="Organisational AI Assessment" content={rpt.assessment} color="#FF6B00" icon="◈"/>
+          <div style={{height:1,background:"#1E0D38",margin:"3px 0"}}/>
+          <ReportBlock title="90-Day Strategy Plan" content={rpt.strategy} color="#B050FF" icon="◆"/>
+          <div style={{height:1,background:"#1E0D38",margin:"3px 0"}}/>
+          <ReportBlock title="Leadership Upskilling Plan" content={rpt.coaching} color="#FFAA60" icon="◎"/>
+        </div>
+        {orgRpt&&<div style={{...CS,border:"1px solid #FF6B00",marginBottom:13}} className="fu">
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16,flexWrap:"wrap",gap:8}}>
+            <div style={{fontFamily:FS,fontWeight:800,fontSize:16,background:G,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>◈ Full Organisational AI Strategy Document</div>
+            <div style={{display:"flex",gap:7}}><Pill c="#2EE5A0">✓ Included</Pill><Btn onClick={()=>setStage("org_report")} size="sm" v="soft">View Full →</Btn></div>
+          </div>
+          <ReportBlock title="Document Preview" content={orgRpt.slice(0,500)+"…"} color="#FF6B00" icon="◈"/>
+        </div>}
+        <div style={CS} className="fu">
+          <div style={{fontFamily:FS,fontWeight:800,color:"#fff",fontSize:16,marginBottom:4}}>Team Course Recommendations</div>
+          <div style={{color:"#9478C0",fontSize:12,fontFamily:FB,marginBottom:16}}>Based on org skill gap: <strong style={{color:arc.color}}>{arc.skillGap}</strong></div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(185px,1fr))",gap:10}}>
+            {getCoursesForArc(arc).map((c,i)=><CourseCard key={c.id} course={c} highlight={i===0}/>)}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── ORG REPORT
+  if(stage==="org_report") return(
+    <div style={{minHeight:"100vh",background:"#07030F",paddingTop:26,paddingBottom:72}}>
+      <div style={WP}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:22,flexWrap:"wrap",gap:9}}>
+          <Logo/>
+          <div style={{display:"flex",gap:8}}>
+            <Btn onClick={()=>setStage("exec_hub")} v="ghost" size="sm">← Executive Hub</Btn>
+            <button onClick={reset} style={{background:"none",border:"1px solid #1E0D38",borderRadius:7,color:"#E4D8FF",padding:"5px 12px",fontSize:11,fontFamily:FB}}>↩ Restart</button>
+          </div>
+        </div>
+        <div style={{...CS,border:"1px solid #FF6B00"}} className="fu">
+          <div style={{display:"flex",alignItems:"center",gap:11,marginBottom:20,paddingBottom:15,borderBottom:"1px solid #1E0D38"}}>
+            <LogoMark size={28}/>
+            <div>
+              <div style={{fontFamily:FS,fontWeight:800,fontSize:17,color:"#fff"}}>Organisational AI Strategy Document</div>
+              <div style={{color:"#9478C0",fontSize:11,fontFamily:FB}}>{profile.company} · {profile.industry} · {teamResps.length} team responses · {profile.role}: {profile.name}</div>
+            </div>
+            <Pill c="#FF6B00" size="md" style={{marginLeft:"auto"}}>Confidential</Pill>
+          </div>
+          {orgLoad
+            ?<div style={{display:"flex",alignItems:"center",gap:11,color:"#E4D8FF",padding:"26px 0",fontFamily:FB,fontSize:14}}><div style={{width:20,height:20,border:"2px solid #1E0D38",borderTop:"2px solid #FF6B00",borderRadius:"50%",animation:"spin 1s linear infinite",flexShrink:0}}/>Generating strategy document for {profile.company}…</div>
+            :<ReportBlock title="Full Organisational AI Strategy Document" content={orgRpt} color="#FF6B00" icon="◈"/>
+          }
+        </div>
+      </div>
+    </div>
+  );
+
+  return null;
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App/>);
+</script>
+</body>
+</html>
